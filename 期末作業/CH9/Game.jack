@@ -1,0 +1,38 @@
+class Game {
+    static Paddle paddle;
+    static Ball ball;
+
+    function void main() {
+        var char key;
+
+        do Screen.clearScreen();
+
+        let paddle = Paddle.new(230, 240);
+        let ball = Ball.new(250, 100);
+
+        while (true) {
+            let key = Keyboard.keyPressed();
+
+            if (key = 130) {        // ←
+                do paddle.moveLeft();
+            }
+            if (key = 132) {        // →
+                do paddle.moveRight();
+            }
+
+            do ball.move();
+
+            // 球碰到擋板
+            if (ball.bottom() >= paddle.top()) {
+                if (ball.right() >= paddle.left() &
+                    ball.left() <= paddle.right()) {
+                    do ball.bounce();
+                }
+            }
+
+            do Sys.wait(10);
+        }
+
+        return;
+    }
+}

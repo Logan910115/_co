@@ -1,0 +1,58 @@
+# JackTokenizer.py
+import re
+
+KEYWORDS = {
+    "class","constructor","function","method","field","static","var",
+    "int","char","boolean","void","true","false","null","this",
+    "let","do","if","else","while","return"
+}
+
+SYMBOLS = "{}()[].,;+-*/&|<>=~"
+ESCAPE = {
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;",
+    "\"": "&quot;"
+}
+
+class JackTokenizer:
+    def __init__(self, filename):
+        with open(filename, "r", encoding="utf-8") as f:
+            code = f.read()
+
+        # 移除註解
+        code = re.sub(r"//.*", "", code)
+        code = re.sub(r"/\*.*?\*/", "", code, flags=re.S)
+
+        self.tokens = self.tokenize(code)
+        self.index = 0
+
+    def tokenize(self, code):
+        pattern = r'"[^"\n]*"|[A-Za-z_]\w*|\d+|[' + re.escape(SYMBOLS) + ']'
+        return re.findall(pattern, code)
+
+    def hasMoreTokens(self):
+        return self.index < len(self.tokens)
+
+    def advance(self):
+        self.current = self.tokens[self.index]
+        self.index += 1
+
+    def tokenType(self):
+        t = self.current
+        if t in KEYWORDS:
+            return "keyword"
+        if t in SYMBOLS:
+            return "symbol"
+        if t.isdigit():
+            return "integerConstant"
+        if t.startswith('"'):
+            return "stringConstant"
+        return "identifier"
+
+    def token(self):
+        if self.tokenType() == "stringConstant":
+            return self.current[1:-1]
+        if self.tokenType() == "symbol":
+            return ESCAPE.get(self.current, self.current)
+        return self.current

@@ -1,0 +1,19 @@
+# JackAnalyzer.py (Tokenizer mode)
+import sys
+from JackTokenizer import JackTokenizer
+
+def tokenize_file(filename):
+    tokenizer = JackTokenizer(filename)
+    out = filename.replace(".jack", "T.xml")
+
+    with open(out, "w", encoding="utf-8") as f:
+        f.write("<tokens>\n")
+        while tokenizer.hasMoreTokens():
+            tokenizer.advance()
+            t = tokenizer.tokenType()
+            v = tokenizer.token()
+            f.write(f"<{t}> {v} </{t}>\n")
+        f.write("</tokens>\n")
+
+if __name__ == "__main__":
+    tokenize_file(sys.argv[1])

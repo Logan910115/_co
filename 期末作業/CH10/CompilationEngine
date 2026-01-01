@@ -1,0 +1,104 @@
+# CompilationEngine.py
+class CompilationEngine:
+    def __init__(self, tokenizer, out):
+        self.tk = tokenizer
+        self.out = out
+        self.indent = 0
+
+    def write(self, text):
+        self.out.write("  " * self.indent + text + "\n")
+
+    def eat(self):
+        self.tk.advance()
+        t = self.tk.tokenType()
+        v = self.tk.token()
+        self.write(f"<{t}> {v} </{t}>")
+
+    def compileClass(self):
+        self.write("<class>")
+        self.indent += 1
+
+        self.eat()  # class
+        self.eat()  # className
+        self.eat()  # {
+
+        while self.tk.tokens[self.tk.index] in ("static", "field"):
+            self.compileClassVarDec()
+
+        while self.tk.tokens[self.tk.index] in ("constructor", "function", "method"):
+            self.compileSubroutine()
+
+        self.eat()  # }
+
+        self.indent -= 1
+        self.write("</class>")
+
+    def compileClassVarDec(self):
+        self.write("<classVarDec>")
+        self.indent += 1
+        self.eat()
+        self.eat()
+        self.eat()
+        while self.tk.tokens[self.tk.index] == ",":
+            self.eat()
+            self.eat()
+        self.eat()  # ;
+        self.indent -= 1
+        self.write("</classVarDec>")
+
+    def compileSubroutine(self):
+        self.write("<subroutineDec>")
+        self.indent += 1
+        self.eat()
+        self.eat()
+        self.eat()
+        self.compileParameterList()
+        self.eat()
+        self.compileSubroutineBody()
+        self.indent -= 1
+        self.write("</subroutineDec>")
+
+    def compileParameterList(self):
+        self.write("<parameterList>")
+        self.indent += 1
+        if self.tk.tokens[self.tk.index] != ")":
+            self.eat()
+            self.eat()
+            while self.tk.tokens[self.tk.index] == ",":
+                self.eat()
+                self.eat()
+                self.eat()
+        self.indent -= 1
+        self.write("</parameterList>")
+
+    def compileSubroutineBody(self):
+        self.write("<subroutineBody>")
+        self.indent += 1
+        self.eat()  # {
+        while self.tk.tokens[self.tk.index] == "var":
+            self.compileVarDec()
+        self.compileStatements()
+        self.eat()  # }
+        self.indent -= 1
+        self.write("</subroutineBody>")
+
+    def compileVarDec(self):
+        self.write("<varDec>")
+        self.indent += 1
+        self.eat()
+        self.eat()
+        self.eat()
+        while self.tk.tokens[self.tk.index] == ",":
+            self.eat()
+            self.eat()
+        self.eat()
+        self.indent -= 1
+        self.write("</varDec>")
+
+    def compileStatements(self):
+        self.write("<statements>")
+        self.indent += 1
+        while self.tk.tokens[self.tk.index] in ("let","if","while","do","return"):
+            getattr(self, "compile" + self.tk.tokens[self.tk.index].capitalize())()
+        self.indent -= 1
+        self.write("</statements>")

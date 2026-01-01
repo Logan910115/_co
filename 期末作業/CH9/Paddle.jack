@@ -1,0 +1,46 @@
+class Paddle {
+    field int x, y, width, height;
+
+    constructor Paddle new(int startX, int startY) {
+        let x = startX;
+        let y = startY;
+        let width = 40;
+        let height = 5;
+        do draw();
+        return this;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + width, y + height);
+        return;
+    }
+
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + width, y + height);
+        return;
+    }
+
+    method void moveLeft() {
+        if (x > 5) {
+            do erase();
+            let x = x - 5;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveRight() {
+        if (x + width < 510) {
+            do erase();
+            let x = x + 5;
+            do draw();
+        }
+        return;
+    }
+
+    method int left() { return x; }
+    method int right() { return x + width; }
+    method int top() { return y; }
+}

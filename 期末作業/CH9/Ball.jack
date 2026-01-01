@@ -1,0 +1,61 @@
+class Ball {
+    field int x, y, dx, dy, size;
+
+    constructor Ball new(int startX, int startY) {
+        let x = startX;
+        let y = startY;
+        let dx = 2;
+        let dy = 2;
+        let size = 4;
+        do draw();
+        return this;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + size, y + size);
+        return;
+    }
+
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + size, y + size);
+        return;
+    }
+
+    method void move() {
+        do erase();
+        let x = x + dx;
+        let y = y + dy;
+
+        // 左右牆反彈
+        if (x < 5 | x > 510) {
+            let dx = -dx;
+        }
+
+        // 上牆反彈
+        if (y < 5) {
+            let dy = -dy;
+        }
+
+        do draw();
+        return;
+    }
+
+    method void bounce() {
+        let dy = -dy;
+        return;
+    }
+
+    method int bottom() {
+        return y + size;
+    }
+
+    method int left() {
+        return x;
+    }
+
+    method int right() {
+        return x + size;
+    }
+}
