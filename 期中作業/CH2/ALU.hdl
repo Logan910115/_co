@@ -1,0 +1,38 @@
+CHIP ALU {
+    IN  x[16], y[16],
+        zx, nx, zy, ny, f, no;
+    OUT out[16], zr, ng;
+
+    PARTS:
+    // zero x
+    Mux16(a=x, b[0]=false, b[1]=false, b[2]=false, b[3]=false,
+          b[4]=false, b[5]=false, b[6]=false, b[7]=false,
+          b[8]=false, b[9]=false, b[10]=false, b[11]=false,
+          b[12]=false, b[13]=false, b[14]=false, b[15]=false,
+          sel=zx, out=x1);
+    Not16(in=x1, out=x2);
+    Mux16(a=x1, b=x2, sel=nx, out=x3);
+
+    // zero y
+    Mux16(a=y, b[0]=false, b[1]=false, b[2]=false, b[3]=false,
+          b[4]=false, b[5]=false, b[6]=false, b[7]=false,
+          b[8]=false, b[9]=false, b[10]=false, b[11]=false,
+          b[12]=false, b[13]=false, b[14]=false, b[15]=false,
+          sel=zy, out=y1);
+    Not16(in=y1, out=y2);
+    Mux16(a=y1, b=y2, sel=ny, out=y3);
+
+    // function
+    And16(a=x3, b=y3, out=andOut);
+    Add16(a=x3, b=y3, out=addOut);
+    Mux16(a=andOut, b=addOut, sel=f, out=out1);
+
+    // negate output
+    Not16(in=out1, out=out2);
+    Mux16(a=out1, b=out2, sel=no, out=out);
+
+    // zr & ng
+    Or16Way(in=out, out=orOut);
+    Not(in=orOut, out=zr);
+    And(a=out[15], b=true, out=ng);
+}

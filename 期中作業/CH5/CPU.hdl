@@ -1,0 +1,65 @@
+CHIP CPU {
+    IN  inM[16], instruction[16], reset;
+    OUT outM[16], writeM, addressM[15], pc[15];
+
+    PARTS:
+    // 判斷指令型態
+    Not(in=instruction[15], out=isAInstruction);
+
+    // A Register
+    Or(a=isAInstruction, b=instruction[5], out=loadA);
+    ARegister(in=instruction, load=loadA, out=aOut);
+
+    // D Register
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=dOut);
+
+    // ALU input
+    Mux16(a=aOut, b=inM, sel=instruction[12], out=aluY);
+
+    ALU(
+        x=dOut,
+        y=aluY,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=aluOut,
+        zr=zr,
+        ng=ng
+    );
+
+    // writeM
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // addressM
+    And(a=instruction[15], b=instruction[3], out=addrSel);
+    Mux16(a=aOut, b=aluOut, sel=addrSel, out=addrTemp);
+    And16(a=addrTemp, b[0]=true, b[1]=true, b[2]=true, b[3]=true,
+          b[4]=true, b[5]=true, b[6]=true, b[7]=true,
+          b[8]=true, b[9]=true, b[10]=true, b[11]=true,
+          b[12]=true, b[13]=true, b[14]=true, b[15]=false,
+          out=addressM);
+
+    // jump logic
+    Not(in=zr, out=notZr);
+    Not(in=ng, out=notNg);
+    And(a=notZr, b=notNg, out=pos);
+
+    And(a=instruction[2], b=ng, out=jlt);
+    And(a=instruction[1], b=zr, out=jeq);
+    And(a=instruction[0], b=pos, out=jgt);
+
+    Or(a=jlt, b=jeq, out=jlteq);
+    Or(a=jlteq, b=jgt, out=jump);
+
+    And(a=instruction[15], b=jump, out=pcLoad);
+
+    // PC
+    PC(in=aOut, load=pcLoad, inc=true, reset=reset, out=pc);
+
+    // output to memory
+    outM=aluOut;
+}
